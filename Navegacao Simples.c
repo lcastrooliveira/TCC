@@ -27,7 +27,7 @@ int main()                                    // main function
   int DO = 22, CLK = 23, DI = 24, CS = 25;
   sd_mount(DO, CLK, DI, CS);
   remove("QUADRADO.TXT");
-  int SPEED = 16;
+  int SPEED = MSPEED;
   int MIN_DIST = 7;
   //Define que a tarefa a ser executada como mapeamento
   tarefa = MAPEAMENTO;
@@ -37,7 +37,7 @@ int main()                                    // main function
   drive_setMaxSpeed(SPEED);
   pause(5000);
   cog_automato = cog_run(startLeitura,128);
-  pause(500);
+  //pause(500);
   while(ping_cm(11) >= 3) {
     drive_ramp(SPEED, SPEED);                       // Forward 2 RPS
     pause(100);
@@ -56,10 +56,10 @@ int main()                                    // main function
     de = para;
   }
   drive_ramp(0, 0);
-  FILE* fp = fopen("dimen.txt", "a");          // Open a file for writing
-  fwrite(&num_vertices, sizeof(num_vertices), 1, fp);      // Add contents to the file
-  fwrite(&tam_coluna, sizeof(tam_coluna), 1, fp);      // Add contents to the file
-  fclose(fp);
+  //FILE* fp = fopen("dimen.txt", "a");          // Open a file for writing
+  //fwrite(&num_vertices, sizeof(num_vertices), 1, fp);      // Add contents to the file
+  //fwrite(&tam_coluna, sizeof(tam_coluna), 1, fp);      // Add contents to the file
+  //fclose(fp);
   mandarMapaGrid();
   receberCoordenadas();
 }
@@ -114,7 +114,7 @@ void corrigirGiro(short sentido_origem, short sentido_destino) {
 
 void mandarMapaGrid() {
   //para a thread do automato para liberar recursos
-  cog_end(cog_automato);
+  //cog_end(cog_automato);
   unsigned char grid[num_vertices+2];
   FILE* fp = fopen("QUADRADO.TXT","r");
   fread(grid,1,num_vertices,fp);
@@ -141,10 +141,10 @@ void receberCoordenadas() {
   }
   fdserial_close(xbee); 
   for(short i = 0; i < 20; i++) {
-    if(coord[i] == 29) {
-       //freqout(4, 250, 4000);
-    }
-    pause(250);      
+    if(coord[i] != 0) {
+      freqout(4, 250, 4000);
+      pause(250);          
+    } else break;
   }
   voltar(coord);
 }
@@ -152,14 +152,14 @@ void receberCoordenadas() {
 void voltar(unsigned short coord[]) {
   //startar automato para saber quando avancou um quadrado
   drive_goto(-4,-4);
-  cog_automato = cog_run(startLeitura,128);
+  //cog_automato = cog_run(startLeitura,128);
   //Muda a tarefa para percurso
   tarefa = PERCURSO;
   for(short i = 0; i < 20; i++) {
     if(coord[i] == 0) break;
     para = coord[i]; 
     corrigirGiro(de,para);
-    de = para;
+    de = para;    
     if(!avancar1Quadrado()) {
       break;
     }
